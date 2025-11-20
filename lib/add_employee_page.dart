@@ -1,9 +1,6 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-
-import 'package:path_provider/path_provider.dart';
-import 'dart:io';
-
 import 'employee_model.dart';
 import 'DBHelperEmpleado.dart';
 import 'VistasTableEmployye.dart';
@@ -27,33 +24,10 @@ class _AddEmployeePageState extends State<AddEmployeePage> {
     final XFile? imagen = await picker.pickImage(source: ImageSource.gallery);
 
     if (imagen != null) {
-      // Copiar la imagen a carpeta interna segura
-      final internalPath = await copyImageToInternalFolder(imagen.path);
-
       setState(() {
-        fotoPath = internalPath; // ahora la ruta es PRIVADA y segura
+        fotoPath = imagen.path; // guardamos la ruta de la foto
       });
     }
-  }
-
-  Future<String> copyImageToInternalFolder(String originalPath) async {
-    // Obtener carpeta interna del sistema
-    final directory = await getApplicationDocumentsDirectory();
-
-    // Crear carpeta /fotos si no existe
-    final fotosDir = Directory('${directory.path}/fotos');
-    if (!fotosDir.existsSync()) {
-      fotosDir.createSync(recursive: true);
-    }
-
-    // Nuevo nombre de archivo único
-    final newFilePath =
-        '${fotosDir.path}/${DateTime.now().millisecondsSinceEpoch}.jpg';
-
-    // Copiar
-    final newImage = await File(originalPath).copy(newFilePath);
-
-    return newImage.path; // ESTA es la ruta que se guardará en SQLite
   }
 
   Future<void> guardarEmpleado() async {
