@@ -1,9 +1,12 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'employee_model.dart';
-import 'DBHelperEmpleado.dart';
-import 'VistasTableEmployye.dart';
+
+import 'package:path_provider/path_provider.dart';
+import 'dart:io';
+
+import '../../data/models/empleado.dart';
+import '../../data/db/sqlite_helper.dart';
+import 'empleados_table_page.dart';
 
 class AddEmployeePage extends StatefulWidget {
   const AddEmployeePage({super.key});
@@ -24,10 +27,33 @@ class _AddEmployeePageState extends State<AddEmployeePage> {
     final XFile? imagen = await picker.pickImage(source: ImageSource.gallery);
 
     if (imagen != null) {
+      // Copiar la imagen a carpeta interna segura
+      final internalPath = await copyImageToInternalFolder(imagen.path);
+
       setState(() {
-        fotoPath = imagen.path; // guardamos la ruta de la foto
+        fotoPath = internalPath; // ahora la ruta es PRIVADA y segura
       });
     }
+  }
+
+  Future<String> copyImageToInternalFolder(String originalPath) async {
+    // Obtener carpeta interna del sistema
+    final directory = await getApplicationDocumentsDirectory();
+
+    // Crear carpeta /fotos si no existe
+    final fotosDir = Directory('${directory.path}/fotos');
+    if (!fotosDir.existsSync()) {
+      fotosDir.createSync(recursive: true);
+    }
+
+    // Nuevo nombre de archivo único
+    final newFilePath =
+        '${fotosDir.path}/${DateTime.now().millisecondsSinceEpoch}.jpg';
+
+    // Copiar
+    final newImage = await File(originalPath).copy(newFilePath);
+
+    return newImage.path; // ESTA es la ruta que se guardará en SQLite
   }
 
   Future<void> guardarEmpleado() async {
@@ -76,6 +102,15 @@ class _AddEmployeePageState extends State<AddEmployeePage> {
       context,
       MaterialPageRoute(builder: (_) => const EmployeesTablePage()),
     );
+  }
+
+  Future<void> elimintarTabla() async {
+    try {
+      await DBHelper.deleteEmployeeTable();
+      print("Se elimino Correctamente");
+    } catch (e) {
+      print("Hubo error al eliminar");
+    }
   }
 
   @override
@@ -200,6 +235,17 @@ class _AddEmployeePageState extends State<AddEmployeePage> {
               ),
               child: const Text(
                 "Ver empleados",
+                style: TextStyle(fontSize: 16),
+              ),
+            ),
+            ElevatedButton(
+              onPressed: elimintarTabla,
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                minimumSize: const Size(double.infinity, 50),
+              ),
+              child: const Text(
+                "BORRAR TABLA EMPLEADO",
                 style: TextStyle(fontSize: 16),
               ),
             ),

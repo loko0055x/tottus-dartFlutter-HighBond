@@ -1,7 +1,7 @@
 // lib/pages/employees_table_page.dart
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'DBHelperEmpleado.dart'; // ajusta la ruta si tu DBHelper está en otro lugar
+import '../../data/db/sqlite_helper.dart'; // ajusta la ruta si tu DBHelper está en otro lugar
 
 class EmployeesTablePage extends StatefulWidget {
   const EmployeesTablePage({super.key});
@@ -15,7 +15,6 @@ class _EmployeesTablePageState extends State<EmployeesTablePage> {
   bool _loading = true;
 
   // Ruta de ejemplo (archivo subido). Se usa como placeholder si no hay imagen.
-  // Path local del archivo subido: /mnt/data/aaea6a95-0446-4113-bd42-c3da4c69d41f.png
   static const String _exampleImagePath =
       '/mnt/data/aaea6a95-0446-4113-bd42-c3da4c69d41f.png';
 
@@ -61,6 +60,13 @@ class _EmployeesTablePageState extends State<EmployeesTablePage> {
             width: 80,
             child: Text('EDAD', style: TextStyle(fontWeight: FontWeight.bold)),
           ),
+          SizedBox(
+            width: 100,
+            child: Text(
+              'SINCRONIZADO',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+          ),
         ],
       ),
     );
@@ -95,6 +101,9 @@ class _EmployeesTablePageState extends State<EmployeesTablePage> {
         child: const Icon(Icons.person, size: 48, color: Colors.white70),
       );
     }
+
+    // Obtener el valor de sincronizado (convertir de 0/1 a true/false)
+    bool sincronizado = (emp['sincronizado'] == 1);
 
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
@@ -134,6 +143,14 @@ class _EmployeesTablePageState extends State<EmployeesTablePage> {
                     width: 80,
                     child: Text(
                       emp['edad']?.toString() ?? '-',
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(fontSize: 16),
+                    ),
+                  ),
+                  SizedBox(
+                    width: 100,
+                    child: Text(
+                      sincronizado ? 'Sí' : 'No',
                       textAlign: TextAlign.center,
                       style: const TextStyle(fontSize: 16),
                     ),
@@ -198,9 +215,6 @@ class _EmployeesTablePageState extends State<EmployeesTablePage> {
       body: _buildBody(),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
-          // si quieres navegar a la pantalla de agregar, descomenta y ajusta la ruta
-          // final r = await Navigator.push(context, MaterialPageRoute(builder: (_) => const AddEmployeePage()));
-          // if (r == true) _loadEmployees();
           await _loadEmployees();
         },
         child: const Icon(Icons.add),

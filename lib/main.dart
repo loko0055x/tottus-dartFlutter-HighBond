@@ -1,10 +1,14 @@
+// lib/main.dart
 import 'package:flutter/material.dart';
-import 'add_employee_page.dart';
+import 'ui/pages/home_page.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
-void main() {
-  sqfliteFfiInit(); // <--- Inicializa SQLite para Windows
+void main() async {
+  // Inicializar SQLite FFI para Windows
+  sqfliteFfiInit();
   databaseFactory = databaseFactoryFfi;
+  await dotenv.load(fileName: ".env");
   runApp(const MyApp());
 }
 
@@ -14,34 +18,13 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       title: 'CRUD Empleados',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
         useMaterial3: true,
       ),
       home: const HomePage(),
-    );
-  }
-}
-
-class HomePage extends StatelessWidget {
-  const HomePage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text("Inicio CRUD")),
-      body: Center(
-        child: ElevatedButton(
-          child: const Text("Agregar Empleado"),
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const AddEmployeePage()),
-            );
-          },
-        ),
-      ),
     );
   }
 }
